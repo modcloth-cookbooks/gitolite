@@ -40,7 +40,7 @@ bash 'install_gitolite' do
 end
 
 node.gitolite.each do |instance|
-  username = instance['name']
+  username = instance.fetch('name')
 
   user username do
     comment "#{username} Gitolite User"
@@ -53,20 +53,13 @@ node.gitolite.each do |instance|
     action :create
   end
 
-  admin_name = instance['admin']
+  admin_name = instance.fetch('admin')
   admin = data_bag_item('users', admin_name)
   admin_ssh_key = admin['ssh_key'] || admin['ssh_keys']
 
   file "#{TMP}/gitolite-#{admin_name}.pub" do
     owner username
     content admin_ssh_key
-  end
-
-  if instance['repo_base']
-    link instance['repo_base'] do
-      to "/home/#{username}/repositories"
-      owner username
-    end
   end
 
   template "/home/#{username}/.gitolite.rc" do
