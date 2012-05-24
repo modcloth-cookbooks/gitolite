@@ -19,22 +19,27 @@
 
 require_recipe "git"
 
-bash 'install_gitolite' do
-  cwd "/tmp"
-  code <<-EOH
-    rm -rf gitolite-source
-    git clone git://github.com/sitaramc/gitolite gitolite-source
-    cd gitolite-source
-    git checkout -t -f origin/pu
-    mkdir -p /usr/local/share/gitolite/conf /usr/local/share/gitolite/hooks
-    src/gl-system-install /usr/local/bin /usr/local/share/gitolite/conf /usr/local/share/gitolite/hooks
-  EOH
-  creates '/usr/local/bin/gl-setup'
+PREFIX = node.gitolite_global.prefix
+TMP = Chef::Config[:file_cache_path]
+REPO_DEST = File.join(TMP, 'gitolite-source')
+
+bash 'checkout_gitolite' do
+  cwd TMP
+  code 'git clone git://github.com/sitaramc/gitolite gitolite-source'
+  not_if { File.exists?(File.join(REPO_DEST, '.git')) }
 end
 
-gitolite_instances = node['gitolite']
+bash 'install_gitolite' do
+  cwd REPO_DEST
+  code <<-EOH
+    git reset --hard #{node.gitolite_global.ref}
+    mkdir -p #{PREFIX}/share/gitolite/conf #{PREFIX}/share/gitolite/hooks
+    src/gl-system-install #{PREFIX}/bin #{PREFIX}/share/gitolite/conf #{PREFIX}/share/gitolite/hooks
+  EOH
+  creates "#{PREFIX}/bin/gl-setup"
+end
 
-gitolite_instances.each do |instance|
+node.gitolite.each do |instance|
   username = instance['name']
 
   user username do
@@ -49,9 +54,10 @@ gitolite_instances.each do |instance|
   end
 
   admin_name = instance['admin']
-  admin_ssh_key = data_bag_item('users',admin_name)['ssh_key']
+  admin = data_bag_item('users', admin_name)
+  admin_ssh_key = admin['ssh_key'] || admin['ssh_keys']
 
-  file "/tmp/gitolite-#{admin_name}.pub" do
+  file "#{TMP}/gitolite-#{admin_name}.pub" do
     owner username
     content admin_ssh_key
   end
@@ -64,10 +70,10 @@ gitolite_instances.each do |instance|
 
   execute "installing_gitolite_for" do
     user username
-    command "/usr/local/bin/gl-setup /tmp/gitolite-#{admin_name}.pub"
+    command "#{PREFIX}/bin/gl-setup #{TMP}/gitolite-#{admin_name}.pub"
     environment ({'HOME' => "/home/#{username}"})
   end
-  
+
   if instance.has_key?('campfire')
     gem_package "tinder"
     username = instance['name']
