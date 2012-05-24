@@ -32,11 +32,11 @@ end
 bash 'install_gitolite' do
   cwd REPO_DEST
   code <<-EOH
+    set -e
     git reset --hard #{node.gitolite_global.ref}
-    mkdir -p #{PREFIX}/share/gitolite/conf #{PREFIX}/share/gitolite/hooks
-    src/gl-system-install #{PREFIX}/bin #{PREFIX}/share/gitolite/conf #{PREFIX}/share/gitolite/hooks
+    ./install -ln #{PREFIX}/bin
   EOH
-  creates "#{PREFIX}/bin/gl-setup"
+  creates "#{PREFIX}/bin/gitolite"
 end
 
 node.gitolite.each do |instance|
@@ -62,6 +62,13 @@ node.gitolite.each do |instance|
     content admin_ssh_key
   end
 
+  if instance['repo_base']
+    link instance['repo_base'] do
+      to "/home/#{username}/repositories"
+      owner username
+    end
+  end
+
   template "/home/#{username}/.gitolite.rc" do
     owner username
     source "gitolite.rc.erb"
@@ -70,7 +77,7 @@ node.gitolite.each do |instance|
 
   execute "installing_gitolite_for" do
     user username
-    command "#{PREFIX}/bin/gl-setup #{TMP}/gitolite-#{admin_name}.pub"
+    command "#{PREFIX}/bin/gitolite setup -pk #{TMP}/gitolite-#{admin_name}.pub"
     environment ({'HOME' => "/home/#{username}"})
   end
 
