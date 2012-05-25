@@ -13,5 +13,9 @@ attribute 'gitolite_global/prefix',
 
 attribute 'gitolite_global/ref',
   :display_name => 'Gitolite version reference',
-  :description => 'Version tag to checkout when installing gitolite, which may be any valid git reference',
-  :default => 'v3.03'
+  :description => <<-EODESC.gsub(/^  */, ''),
+      Version tag to checkout when installing gitolite, which may be any valid git reference.
+      If Gitolite g3 is desired, the ref should be a g3 tag matching /^v3/, else the
+      installation will use g2-style executables and arguments.
+  EODESC
+  :default => 'v2.3.1'

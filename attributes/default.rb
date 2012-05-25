@@ -6,4 +6,4 @@ else
 end
 
 default.gitolite = []
-default.gitolite_global.ref = 'v3.03'
+default.gitolite_global.ref = 'v2.31'
