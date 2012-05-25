@@ -61,8 +61,6 @@ node.gitolite.each do |instance|
   end
 
   group groupname do
-    members [username]
-    append true
   end
 
   directory "/home/#{username}" do
