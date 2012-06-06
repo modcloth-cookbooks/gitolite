@@ -63,6 +63,12 @@ node.gitolite.each do |instance|
   group groupname do
   end
 
+  if node.platform == 'solaris2'
+    execute "unlock the newly-created '#{username}' account" do
+      command "passwd -u #{username}"
+    end
+  end
+
   directory "/home/#{username}" do
     mode 0770
     owner username
