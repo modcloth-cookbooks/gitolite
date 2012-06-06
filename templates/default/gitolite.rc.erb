@@ -37,7 +37,11 @@ $GL_NO_DAEMON_NO_GITWEB = 0;
 # http://github.com/sitaramc/gitolite/blob/pu/doc/gitolite.rc.mkd#_variables_with_a_security_impact
 # ------------------------------------------------------------------------------
 # $GL_ALL_READ_ALL = 0;
+<% if @git_path %>
+$GIT_PATH='<%= @git_path %>';
+<% else %>
 $GIT_PATH="";
+<% end %>
 $GL_GITCONFIG_KEYS = "";
 # $GL_GITCONFIG_WILD = 0;
 $GL_NO_CREATE_REPOS = 0;

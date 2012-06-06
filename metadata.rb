@@ -11,6 +11,11 @@ attribute 'gitolite_global/prefix',
   :description => 'Installation prefix for Gitolite code files',
   :default => '/usr/local'
 
+attribute 'gitolite_global/git_path',
+  :display_name => 'PATH entry for git',
+  :description => 'PATH entry so that Gitolite knows how to execute git',
+  :default => ''
+
 attribute 'gitolite_global/ref',
   :display_name => 'Gitolite version reference',
   :description => <<-EODESC.gsub(/^  */, ''),

@@ -101,7 +101,7 @@ node.gitolite.each do |instance|
     owner username
     group groupname
     action :create
-    variables(:prefix => PREFIX)
+    variables(:prefix => PREFIX, :git_path => node.gitolite_global.git_path)
   end
 
   execute "installing_gitolite_for" do
