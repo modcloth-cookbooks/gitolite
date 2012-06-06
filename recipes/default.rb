@@ -77,8 +77,12 @@ node.gitolite.each do |instance|
   end
 
   admin_name = instance.fetch('admin')
-  admin = data_bag_item('users', admin_name)
-  admin_ssh_key = admin['ssh_key'] || admin['ssh_keys']
+  if keyname = instance['admin_key_name']
+    admin_ssh_key = data_bag_item('keys', keyname).fetch('public_key')
+  else
+    admin = data_bag_item('users', admin_name)
+    admin_ssh_key = admin['ssh_key'] || admin['ssh_keys']
+  end
 
   file "#{TMP}/#{admin_name}.pub" do
     content admin_ssh_key
