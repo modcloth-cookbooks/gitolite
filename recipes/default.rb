@@ -38,7 +38,7 @@ end
 bash 'install_gitolite' do
   cwd REPO_DEST
   if G3
-    code "./install -ln #{PREFIX}/bin"
+    code "./install -to #{PREFIX}/bin"
     creates "#{PREFIX}/bin/gitolite"
   else
     code <<-EOH
@@ -71,7 +71,7 @@ node.gitolite.each do |instance|
   end
 
   directory home_directory do
-    mode 0770
+    mode 0755
     owner username
     group groupname
     action :create

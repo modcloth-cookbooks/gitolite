@@ -132,6 +132,12 @@
         ],
 );
 
+<% if @git_path %>
+$ENV{PATH} = "<%= @git_path %>:$ENV{PATH}";
+<% else %>
+$ENV{PATH} = "<%= @prefix %>/bin:$ENV{PATH}";
+<% end %>
+
 # ------------------------------------------------------------------------------
 # per perl rules, this should be the last line in such a file:
 1;
