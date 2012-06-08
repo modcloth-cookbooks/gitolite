@@ -53,11 +53,12 @@ end
 node.gitolite.each do |instance|
   username = instance.fetch('name')
   groupname = instance.fetch('group', username)
+  home_directory = instance.fetch('home_directory', "/home/#{username}")
 
   user username do
     comment "#{username} Gitolite User"
-    home "/home/#{username}"
-    shell "/bin/bash"
+    home home_directory
+    shell "/bin/sh"
   end
 
   group groupname do
@@ -69,7 +70,7 @@ node.gitolite.each do |instance|
     end
   end
 
-  directory "/home/#{username}" do
+  directory home_directory do
     mode 0770
     owner username
     group groupname
@@ -91,7 +92,7 @@ node.gitolite.each do |instance|
     group groupname
   end
 
-  template "/home/#{username}/.gitolite.rc" do
+  template "#{home_directory}/.gitolite.rc" do
     if G3
       source 'g3-gitolite.rc.erb'
     else
@@ -111,14 +112,13 @@ node.gitolite.each do |instance|
     else
       command "#{PREFIX}/bin/gl-setup #{TMP}/#{admin_name}.pub"
     end
-    environment ({'HOME' => "/home/#{username}"})
+    environment({'HOME' => home_directory})
   end
 
   if instance.has_key?('campfire')
     gem_package "tinder"
-    username = instance['name']
 
-    template "/home/#{username}/.gitolite/hooks/common/campfire-hook.rb" do
+    template "#{home_directory}/.gitolite/hooks/common/campfire-hook.rb" do
       source "campfire-hook.rb.erb"
       mode 0775
       owner username
@@ -126,14 +126,14 @@ node.gitolite.each do |instance|
       variables( :campfire => instance['campfire'] )
     end
 
-    cookbook_file "/home/#{username}/.gitolite/hooks/common/campfire-notification.rb" do
+    cookbook_file "#{home_directory}/.gitolite/hooks/common/campfire-notification.rb" do
       source "campfire-notification.rb"
       mode 0775
       owner username
       group groupname
     end
 
-    cookbook_file "/home/#{username}/.gitolite/hooks/common/post-receive" do
+    cookbook_file "#{home_directory}/.gitolite/hooks/common/post-receive" do
       source "campfire-post-receive"
       mode 0775
       owner username
