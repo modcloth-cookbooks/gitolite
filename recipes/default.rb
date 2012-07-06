@@ -92,6 +92,39 @@ node.gitolite.each do |instance|
     group groupname
   end
 
+  user_ssh_pubkey = user_ssh_privkey = ''
+  if user_keyname = instance['user_key_name']
+    user_ssh_pubkey = data_bag_item('keys', user_keyname).fetch('public_key')
+    user_ssh_privkey = data_bag_item('keys', user_keyname).fetch('private_key')
+  end
+
+  if !user_ssh_pubkey.empty? && !user_ssh_privkey.empty?
+    directory "#{home_directory}/.ssh" do
+      mode 0700
+      owner username
+      group groupname
+    end
+
+    keytype = case user_ssh_privkey
+              when /RSA PRIVATE/ then 'rsa'
+              when /DSA PRIVATE/ then 'dsa'
+              end
+
+    file "#{home_directory}/.ssh/id_#{keytype}" do
+      content user_ssh_privkey
+      mode 0600
+      owner username
+      group groupname
+    end
+
+    file "#{home_directory}/.ssh/id_#{keytype}.pub" do
+      content user_ssh_pubkey
+      mode 0600
+      owner username
+      group groupname
+    end
+  end
+
   template "#{home_directory}/.gitolite.rc" do
     if G3
       source 'g3-gitolite.rc.erb'
